@@ -14,19 +14,16 @@ import java.awt.event.KeyEvent;
 
 public class Board extends JPanel {
 
-    private final int BOARD_WIDTH = 10;
-    private final int BOARD_HEIGHT = 22;
-    private final int PERIOD_INTERVAL = 300;
-
+    final int BOARD_WIDTH = 10;
+    final int BOARD_HEIGHT = 22;
     private Timer timer;
     private boolean isFallingFinished = false;
-    private boolean isPaused = false;
-    private int numLinesRemoved = 0;
-    private int curX = 0;
-    private int curY = 0;
+    int numLinesRemoved = 0;
+    int curX = 0;
+    int curY = 0;
     private JLabel statusbar;
-    private Shape curPiece;
-    private TetrisBlocks[] board;
+    Shape curPiece;
+    TetrisBlocks[] board;
 
     public Board(TetrisGame parent) {
 
@@ -37,51 +34,23 @@ public class Board extends JPanel {
 
         setFocusable(true);
         statusbar = parent.getStatusBar();
-        addKeyListener(new TAdapter());
     }
 
     private int squareWidth() {
-
-        return (int) getSize().getWidth() / BOARD_WIDTH;
+    	//System.out.println(this.getSize().getWidth());
+        return (int) 200 / BOARD_WIDTH;
     }
 
     private int squareHeight() {
 
-        return (int) getSize().getHeight() / BOARD_HEIGHT;
+        return (int) 400 / BOARD_HEIGHT;
     }
 
     private TetrisBlocks shapeAt(int x, int y) {
 
         return board[(y * BOARD_WIDTH) + x];
     }
-
-    void start() {
-
-        curPiece = new Shape();
-        board = new TetrisBlocks[BOARD_WIDTH * BOARD_HEIGHT];
-
-        clearBoard();
-        newPiece();
-
-        timer = new Timer(PERIOD_INTERVAL, new GameCycle());
-        timer.start();
-    }
-
-    private void pause() {
-
-        isPaused = !isPaused;
-
-        if (isPaused) {
-
-            statusbar.setText("paused");
-        } else {
-
-            statusbar.setText(String.valueOf(numLinesRemoved));
-        }
-
-        repaint();
-    }
-
+    
     @Override
     public void paintComponent(Graphics g) {
 
@@ -122,7 +91,7 @@ public class Board extends JPanel {
         }
     }
 
-    private void dropDown() {
+    void dropDown() {
 
         int newY = curY;
 
@@ -139,7 +108,7 @@ public class Board extends JPanel {
         pieceDropped();
     }
 
-    private void oneLineDown() {
+    void oneLineDown() {
 
         if (!tryMove(curPiece, curX, curY - 1)) {
 
@@ -147,7 +116,7 @@ public class Board extends JPanel {
         }
     }
 
-    private void clearBoard() {
+    void clearBoard() {
 
         for (int i = 0; i < BOARD_HEIGHT * BOARD_WIDTH; i++) {
 
@@ -172,7 +141,7 @@ public class Board extends JPanel {
         }
     }
 
-    private void newPiece() {
+    void newPiece() {
 
         curPiece.setRandomShape();
         curX = BOARD_WIDTH / 2 + 1;
@@ -188,7 +157,7 @@ public class Board extends JPanel {
         }
     }
 
-    private boolean tryMove(Shape newPiece, int newX, int newY) {
+    boolean tryMove(Shape newPiece, int newX, int newY) {
 
         for (int i = 0; i < 4; i++) {
 
@@ -278,22 +247,9 @@ public class Board extends JPanel {
                 x + squareWidth() - 1, y + 1);
     }
 
-    private class GameCycle implements ActionListener {
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
 
-            doGameCycle();
-        }
-    }
-
-    private void doGameCycle() {
-
-        update();
-        repaint();
-    }
-
-    private void update() {
+    public void update(boolean isPaused) {
 
         if (isPaused) {
 
@@ -307,32 +263,6 @@ public class Board extends JPanel {
         } else {
 
             oneLineDown();
-        }
-    }
-
-    class TAdapter extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-
-            if (curPiece.getShape() == TetrisBlocks.NoShape) {
-
-                return;
-            }
-
-            int keycode = e.getKeyCode();
-
-            // Java 12 switch expressions
-            switch (keycode) {
-
-                case KeyEvent.VK_P: pause();break;
-                case KeyEvent.VK_LEFT: tryMove(curPiece, curX - 1, curY);break;
-                case KeyEvent.VK_RIGHT: tryMove(curPiece, curX + 1, curY);break;
-                case KeyEvent.VK_DOWN: tryMove(curPiece.rotateRight(), curX, curY);break;
-                case KeyEvent.VK_UP: tryMove(curPiece.rotateLeft(), curX, curY);break;
-                case KeyEvent.VK_SPACE: dropDown();break;
-                case KeyEvent.VK_D: oneLineDown();break;
-            }
         }
     }
 }
